@@ -1,0 +1,44 @@
+# Игнорируем всё в wp-content
+*
+
+# Оставляем сам .gitignore
+!.gitignore
+
+# Оставляем каталоги тем и плагинов
+!themes/
+!plugins/
+
+# Игнорируем остальные темы
+themes/*
+
+# Оставляем собственную тему
+!themes/wh-tattoo/
+!themes/wh-tattoo/**
+
+# Игнорируем остальные плагины
+plugins/*
+
+# Оставляем собственный плагин
+!plugins/wh-tattoo-tools/
+!plugins/wh-tattoo-tools/**
+
+# Временные файлы
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
+# Редакторы
+.vscode/
+.idea/
+
+# Зависимости, если появятся позднее
+node_modules/
+vendor/
+
+# Секреты и локальные настройки
+.env
+.env.*
+*.local

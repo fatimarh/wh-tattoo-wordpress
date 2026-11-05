@@ -1,0 +1,183 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 3,
+  "settings": {
+    "appearanceTools": true,
+    "layout": {
+      "contentSize": "760px",
+      "wideSize": "1280px"
+    },
+    "color": {
+      "defaultPalette": false,
+      "defaultGradients": false,
+      "palette": [
+        {
+          "slug": "black",
+          "color": "#0B0B0B",
+          "name": "Черный"
+        },
+        {
+          "slug": "graphite",
+          "color": "#181818",
+          "name": "Графитовый"
+        },
+        {
+          "slug": "white",
+          "color": "#FFFFFF",
+          "name": "Белый"
+        },
+        {
+          "slug": "light",
+          "color": "#F4F3F0",
+          "name": "Светлый"
+        },
+        {
+          "slug": "gray",
+          "color": "#777777",
+          "name": "Серый"
+        },
+        {
+          "slug": "orange",
+          "color": "#FF5A1F",
+          "name": "Оранжевый"
+        },
+        {
+          "slug": "orange-dark",
+          "color": "#D9440D",
+          "name": "Темно-оранжевый"
+        }
+      ]
+    },
+    "spacing": {
+      "units": [
+        "px",
+        "rem",
+        "%",
+        "vw"
+      ],
+      "spacingSizes": [
+        {
+          "slug": "10",
+          "size": "0.5rem",
+          "name": "XS"
+        },
+        {
+          "slug": "20",
+          "size": "1rem",
+          "name": "S"
+        },
+        {
+          "slug": "30",
+          "size": "1.5rem",
+          "name": "M"
+        },
+        {
+          "slug": "40",
+          "size": "2rem",
+          "name": "L"
+        },
+        {
+          "slug": "50",
+          "size": "clamp(3rem, 7vw, 6rem)",
+          "name": "XL"
+        }
+      ]
+    },
+    "typography": {
+      "fluid": true,
+      "dropCap": false,
+      "fontFamilies": [
+        {
+          "slug": "sans",
+          "name": "Системный шрифт",
+          "fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif"
+        }
+      ],
+      "fontSizes": [
+        {
+          "slug": "small",
+          "size": "0.875rem",
+          "name": "Маленький"
+        },
+        {
+          "slug": "medium",
+          "size": "1rem",
+          "name": "Обычный"
+        },
+        {
+          "slug": "large",
+          "size": "clamp(1.25rem, 2vw, 1.5rem)",
+          "name": "Большой"
+        },
+        {
+          "slug": "x-large",
+          "size": "clamp(2.2rem, 6vw, 5.5rem)",
+          "name": "Очень большой"
+        }
+      ]
+    }
+  },
+  "styles": {
+    "color": {
+      "background": "#FFFFFF",
+      "text": "#0B0B0B"
+    },
+    "spacing": {
+      "blockGap": "1.5rem"
+    },
+    "typography": {
+      "fontFamily": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif",
+      "fontSize": "1rem",
+      "lineHeight": "1.6"
+    },
+    "elements": {
+      "heading": {
+        "typography": {
+          "fontWeight": "600",
+          "lineHeight": "1.08",
+          "letterSpacing": "-0.035em"
+        }
+      },
+      "link": {
+        "color": {
+          "text": "#0B0B0B"
+        },
+        "typography": {
+          "textDecoration": "none"
+        },
+        ":hover": {
+          "color": {
+            "text": "#FF5A1F"
+          }
+        }
+      },
+      "button": {
+        "color": {
+          "background": "#FF5A1F",
+          "text": "#0B0B0B"
+        },
+        "border": {
+          "radius": "0px"
+        },
+        "spacing": {
+          "padding": {
+            "top": "0.9rem",
+            "right": "1.5rem",
+            "bottom": "0.9rem",
+            "left": "1.5rem"
+          }
+        },
+        "typography": {
+          "fontSize": "1rem",
+          "fontWeight": "600"
+        },
+        ":hover": {
+          "color": {
+            "background": "#FFFFFF",
+            "text": "#0B0B0B"
+          }
+        }
+      }
+    }
+  }
+}
