@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WH Tattoo Tools
  * Description: Работы и направления портфолио сайта WH Tattoo.
- * Version: 0.4.0
+ * Version: 0.5.0
  * Author: WH Tattoo
  * Requires PHP: 8.1
  * Text Domain: wh-tattoo-tools
@@ -461,10 +461,10 @@ function wh_tattoo_get_portfolio_terms( int $post_id ): string {
 }
 
 /**
- * Выводит сетку работ и полноэкранную галерею.
+ * Выводит карусель работ без модального просмотра.
  *
  * Использование:
- * [wh_portfolio_grid limit="6"]
+ * [wh_portfolio_grid limit="12"]
  *
  * @param array<string, mixed> $attributes Атрибуты шорткода.
  *
@@ -475,7 +475,7 @@ function wh_tattoo_portfolio_grid_shortcode(
 ): string {
 	$attributes = shortcode_atts(
 		array(
-			'limit' => 6,
+			'limit' => 12,
 		),
 		$attributes,
 		'wh_portfolio_grid'
@@ -483,7 +483,7 @@ function wh_tattoo_portfolio_grid_shortcode(
 
 	$limit = max(
 		1,
-		min( absint( $attributes['limit'] ), 24 )
+		min( absint( $attributes['limit'] ), 50 )
 	);
 
 	$query = new WP_Query(
@@ -502,218 +502,159 @@ function wh_tattoo_portfolio_grid_shortcode(
 		return '<p class="portfolio-empty">Работы пока не опубликованы.</p>';
 	}
 
-	$gallery_items = array();
-
-	while ( $query->have_posts() ) {
-		$query->the_post();
-
-		$post_id = get_the_ID();
-
-		$after_image_id = get_post_thumbnail_id( $post_id );
-
-		if ( ! $after_image_id ) {
-			continue;
-		}
-
-		$before_image_id = absint(
-			get_post_meta(
-				$post_id,
-				'_wh_tattoo_before_image_id',
-				true
-			)
-		);
-
-		$terms = get_the_terms(
-			$post_id,
-			'tattoo_style'
-		);
-
-		$term_names = array();
-
-		if (
-			$terms
-			&& ! is_wp_error( $terms )
-		) {
-			$term_names = wp_list_pluck(
-				$terms,
-				'name'
-			);
-		}
-
-		$after_full = wp_get_attachment_image_url(
-			$after_image_id,
-			'large'
-		);
-
-		$before_full = $before_image_id
-			? wp_get_attachment_image_url(
-				$before_image_id,
-				'large'
-			)
-			: '';
-
-		$after_alt = get_post_meta(
-			$after_image_id,
-			'_wp_attachment_image_alt',
-			true
-		);
-
-		$before_alt = $before_image_id
-			? get_post_meta(
-				$before_image_id,
-				'_wp_attachment_image_alt',
-				true
-			)
-			: '';
-
-		$gallery_items[] = array(
-			'id'         => $post_id,
-			'title'      => get_the_title(),
-			'terms'      => implode( ' · ', $term_names ),
-			'after'      => $after_full ?: '',
-			'before'     => $before_full ?: '',
-			'after_alt'  => $after_alt ?: get_the_title(),
-			'before_alt' => $before_alt ?: 'Фотография до перекрытия',
-		);
-	}
-
-	wp_reset_postdata();
-
-	if ( ! $gallery_items ) {
-		return '<p class="portfolio-empty">У работ не установлены изображения.</p>';
-	}
-
-	$gallery_id = wp_unique_id( 'wh-gallery-' );
+	$carousel_id = wp_unique_id( 'portfolio-carousel-' );
 
 	ob_start();
 	?>
 	<div
-		class="portfolio-gallery"
-		id="<?php echo esc_attr( $gallery_id ); ?>"
-		data-wh-gallery
+		class="portfolio-carousel"
+		data-portfolio-carousel
 	>
-		<div class="portfolio-grid">
-			<?php foreach ( $gallery_items as $index => $item ) : ?>
-				<article class="portfolio-card">
-					<button
-						type="button"
-						class="portfolio-card__button"
-						data-gallery-index="<?php echo esc_attr(
-							(string) $index
-						); ?>"
-						aria-label="<?php echo esc_attr(
-							'Открыть фотографию: ' . $item['title']
-						); ?>"
-					>
-						<?php
-						echo wp_get_attachment_image(
-							get_post_thumbnail_id( $item['id'] ),
-							'wh-tattoo-portfolio-card',
-							false,
-							array(
-								'class'    => 'portfolio-card__image',
-								'loading'  => 'lazy',
-								'decoding' => 'async',
-							)
-						);
-						?>
+		<div class="portfolio-carousel__controls">
+			<button
+				type="button"
+				class="portfolio-carousel__arrow portfolio-carousel__arrow--previous"
+				data-portfolio-previous
+				aria-label="Предыдущие работы"
+			>
+				<span aria-hidden="true">‹</span>
+			</button>
 
-						<?php if ( $item['before'] ) : ?>
-							<span class="portfolio-card__badge">
-								До / После
-							</span>
-						<?php endif; ?>
-
-						<span
-							class="portfolio-card__open"
-							aria-hidden="true"
-						>
-							⛶
-						</span>
-					</button>
-				</article>
-			<?php endforeach; ?>
+			<button
+				type="button"
+				class="portfolio-carousel__arrow portfolio-carousel__arrow--next"
+				data-portfolio-next
+				aria-label="Следующие работы"
+			>
+				<span aria-hidden="true">›</span>
+			</button>
 		</div>
 
-		<dialog class="portfolio-viewer" data-gallery-dialog>
-			<div class="portfolio-viewer__surface">
-				<button
-					type="button"
-					class="portfolio-viewer__close"
-					data-gallery-close
-					aria-label="Закрыть просмотр"
-				>
-					<span aria-hidden="true">×</span>
-				</button>
-
-				<div
-					class="portfolio-viewer__compare"
-					data-gallery-compare
-					hidden
-				>
-					<button
-						type="button"
-						class="is-active"
-						data-gallery-mode="after"
-					>
-						После
-					</button>
-
-					<button
-						type="button"
-						data-gallery-mode="before"
-					>
-						До
-					</button>
-				</div>
-
-				<button
-					type="button"
-					class="portfolio-viewer__nav portfolio-viewer__nav--prev"
-					data-gallery-prev
-					aria-label="Предыдущая работа"
-				>
-					‹
-				</button>
-
-				<figure class="portfolio-viewer__figure">
-					<img
-						class="portfolio-viewer__image"
-						data-gallery-image
-						src=""
-						alt=""
-					>
-
-					<figcaption class="portfolio-viewer__caption">
-						<strong data-gallery-title></strong>
-						<span data-gallery-terms></span>
-					</figcaption>
-				</figure>
-
-				<button
-					type="button"
-					class="portfolio-viewer__nav portfolio-viewer__nav--next"
-					data-gallery-next
-					aria-label="Следующая работа"
-				>
-					›
-				</button>
-			</div>
-		</dialog>
-
-		<script type="application/json" data-gallery-data>
+		<div
+			class="portfolio-carousel__track"
+			id="<?php echo esc_attr( $carousel_id ); ?>"
+			data-portfolio-track
+			tabindex="0"
+			aria-label="Работы тату-мастера"
+		>
 			<?php
-			echo wp_json_encode(
-				$gallery_items,
-				JSON_UNESCAPED_UNICODE
-				| JSON_UNESCAPED_SLASHES
-				| JSON_HEX_TAG
-				| JSON_HEX_AMP
-			);
+			while ( $query->have_posts() ) {
+				$query->the_post();
+
+				$post_id = get_the_ID();
+
+				$after_image_id = get_post_thumbnail_id(
+					$post_id
+				);
+
+				if ( ! $after_image_id ) {
+					continue;
+				}
+
+				$before_image_id = absint(
+					get_post_meta(
+						$post_id,
+						'_wh_tattoo_before_image_id',
+						true
+					)
+				);
+
+				$after_image_url = wp_get_attachment_image_url(
+					$after_image_id,
+					'wh-tattoo-portfolio-card'
+				);
+
+				$before_image_url = $before_image_id
+					? wp_get_attachment_image_url(
+						$before_image_id,
+						'wh-tattoo-portfolio-card'
+					)
+					: '';
+
+				$after_alt = get_post_meta(
+					$after_image_id,
+					'_wp_attachment_image_alt',
+					true
+				);
+
+				$before_alt = $before_image_id
+					? get_post_meta(
+						$before_image_id,
+						'_wp_attachment_image_alt',
+						true
+					)
+					: '';
+				?>
+				<article
+					class="portfolio-slide"
+					data-portfolio-slide
+				>
+					<div class="portfolio-slide__media">
+						<img
+							class="portfolio-slide__image"
+							src="<?php echo esc_url(
+								$after_image_url ?: ''
+							); ?>"
+							alt="<?php echo esc_attr(
+								$after_alt ?: get_the_title()
+							); ?>"
+							loading="lazy"
+							decoding="async"
+							draggable="false"
+							data-portfolio-image
+							data-after-src="<?php echo esc_url(
+								$after_image_url ?: ''
+							); ?>"
+							data-after-alt="<?php echo esc_attr(
+								$after_alt ?: get_the_title()
+							); ?>"
+							data-before-src="<?php echo esc_url(
+								$before_image_url ?: ''
+							); ?>"
+							data-before-alt="<?php echo esc_attr(
+								$before_alt
+									?: 'Фотография до перекрытия'
+							); ?>"
+						>
+
+						<?php if ( $before_image_url ) : ?>
+							<div
+								class="portfolio-slide__compare"
+								aria-label="Сравнение до и после"
+							>
+								<button
+									type="button"
+									class="is-active"
+									data-portfolio-mode="after"
+								>
+									После
+								</button>
+
+								<button
+									type="button"
+									data-portfolio-mode="before"
+								>
+									До
+								</button>
+							</div>
+						<?php endif; ?>
+					</div>
+				</article>
+				<?php
+			}
 			?>
-		</script>
+		</div>
+
+		<div
+			class="portfolio-carousel__progress"
+			aria-hidden="true"
+		>
+			<span data-portfolio-progress></span>
+		</div>
 	</div>
 	<?php
+
+	wp_reset_postdata();
 
 	return (string) ob_get_clean();
 }
