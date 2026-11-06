@@ -59,7 +59,34 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		track.addEventListener("scroll", updateControls, { passive: true });
-		window.addEventListener("resize", updateControls, { passive: true });
+
+		let resizeTimer = null;
+		let previousTrackWidth = track.clientWidth;
+
+		window.addEventListener(
+			"resize",
+			() => {
+				window.clearTimeout(resizeTimer);
+
+				resizeTimer = window.setTimeout(() => {
+					const currentTrackWidth = track.clientWidth;
+
+					if (
+						Math.abs(currentTrackWidth - previousTrackWidth) > 2
+					) {
+						track.scrollTo({
+							left: 0,
+							behavior: "auto"
+						});
+
+						previousTrackWidth = currentTrackWidth;
+					}
+
+					updateControls();
+				}, 120);
+			},
+			{ passive: true }
+		);
 
 		const compareButtons = carousel.querySelectorAll("[data-portfolio-mode]");
 
@@ -92,5 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 
 		updateControls();
+
+		window.requestAnimationFrame(() => {
+			track.scrollLeft = 0;
+			updateControls();
+		});
 	});
 });

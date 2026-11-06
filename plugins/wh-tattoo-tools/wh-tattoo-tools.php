@@ -510,25 +510,16 @@ function wh_tattoo_portfolio_grid_shortcode(
 		class="portfolio-carousel"
 		data-portfolio-carousel
 	>
-		<div class="portfolio-carousel__controls">
-			<button
-				type="button"
-				class="portfolio-carousel__arrow portfolio-carousel__arrow--previous"
-				data-portfolio-previous
-				aria-label="Предыдущие работы"
-			>
-				<span aria-hidden="true">‹</span>
-			</button>
-
-			<button
-				type="button"
-				class="portfolio-carousel__arrow portfolio-carousel__arrow--next"
-				data-portfolio-next
-				aria-label="Следующие работы"
-			>
-				<span aria-hidden="true">›</span>
-			</button>
-		</div>
+		<?php
+		echo '<div class="portfolio-carousel__controls">';
+		echo '<button type="button" class="portfolio-carousel__arrow portfolio-carousel__arrow--previous" data-portfolio-previous aria-label="Предыдущие работы">';
+		echo '<span aria-hidden="true"></span>';
+		echo '</button>';
+		echo '<button type="button" class="portfolio-carousel__arrow portfolio-carousel__arrow--next" data-portfolio-next aria-label="Следующие работы">';
+		echo '<span aria-hidden="true"></span>';
+		echo '</button>';
+		echo '</div>';
+		?>
 
 		<div
 			class="portfolio-carousel__track"
@@ -627,14 +618,14 @@ function wh_tattoo_portfolio_grid_shortcode(
 									class="is-active"
 									data-portfolio-mode="after"
 								>
-									После
+									<span>После</span>
 								</button>
 
 								<button
 									type="button"
 									data-portfolio-mode="before"
 								>
-									До
+									<span>До</span>
 								</button>
 							</div>
 						<?php endif; ?>
