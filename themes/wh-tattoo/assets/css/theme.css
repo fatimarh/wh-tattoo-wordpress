@@ -1633,3 +1633,77 @@ h3 {
 		padding-right: 0;
 	}
 }
+
+/* =========================================================
+   PRICES
+   ========================================================= */
+
+.prices-section {
+	color: var(--wh-white);
+	background: var(--wh-graphite);
+}
+
+.prices-section h2 {
+	max-width: 800px;
+	color: var(--wh-white);
+}
+
+.price-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1px;
+	margin-top: 48px;
+	background: rgba(255, 255, 255, 0.2);
+}
+
+.price-card {
+	min-height: 280px;
+	margin: 0;
+	padding: clamp(28px, 4vw, 48px);
+	background: var(--wh-graphite);
+}
+
+.price-card__value {
+	margin: 0 0 40px;
+	color: var(--wh-orange);
+	font-size: clamp(1.7rem, 3vw, 2.5rem);
+	font-weight: 750;
+	line-height: 1.1;
+	letter-spacing: -0.035em;
+}
+
+.price-card h3 {
+	margin-bottom: 16px;
+	color: var(--wh-white);
+	font-size: 1.35rem;
+}
+
+.price-card p:last-child {
+	margin-bottom: 0;
+	color: #bdbdbd;
+	font-size: 1rem;
+	line-height: 1.65;
+}
+
+.prices-section__note {
+	max-width: 780px;
+	margin-top: 30px;
+	margin-bottom: 0;
+	color: #bdbdbd;
+	font-size: 0.95rem;
+	line-height: 1.65;
+}
+
+@media (max-width: 899px) {
+	.price-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.price-card {
+		min-height: 0;
+	}
+
+	.price-card__value {
+		margin-bottom: 24px;
+	}
+}
