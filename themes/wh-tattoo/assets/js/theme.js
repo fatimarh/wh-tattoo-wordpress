@@ -1,6 +1,21 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
+	const mobileNavigation = document.querySelector(
+		".mobile-navigation"
+	);
+
+	if (mobileNavigation) {
+		const mobileNavigationLinks =
+			mobileNavigation.querySelectorAll("a");
+
+		mobileNavigationLinks.forEach((link) => {
+			link.addEventListener("click", () => {
+				mobileNavigation.removeAttribute("open");
+			});
+		});
+	}
+
 	const carousels = document.querySelectorAll("[data-portfolio-carousel]");
 
 	carousels.forEach((carousel) => {
