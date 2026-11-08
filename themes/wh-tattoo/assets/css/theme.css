@@ -1795,3 +1795,31 @@ h3 {
 #styles + .prices-section {
 	margin-block-start: 0;
 }
+
+.price-card__value {
+	white-space: nowrap;
+}
+
+@media (max-width: 699px) {
+	.price-card {
+		grid-template-columns:
+			minmax(124px, 0.75fr)
+			minmax(0, 1.25fr);
+		column-gap: 18px;
+	}
+
+	.price-card__value {
+		font-size: clamp(1.3rem, 6vw, 1.75rem);
+		white-space: nowrap;
+	}
+}
+
+@media (max-width: 370px) {
+	.price-card {
+		display: block;
+	}
+
+	.price-card__value {
+		margin-bottom: 16px;
+	}
+}
