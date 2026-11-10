@@ -42,3 +42,14 @@ vendor/
 .env
 .env.*
 *.local
+
+# Локальная конфигурация экспортёра отзывов
+tools/yandex-reviews-exporter/config.json
+
+# Диагностические результаты и экспорт отзывов
+tools/yandex-reviews-exporter/output/*
+!tools/yandex-reviews-exporter/output/.gitkeep
+
+# Локальное Python-окружение
+tools/yandex-reviews-exporter/.venv/
+tools/yandex-reviews-exporter/__pycache__/
