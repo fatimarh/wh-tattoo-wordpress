@@ -1,0 +1,8 @@
+{
+  "business_id": "33357510992",
+  "organization_name": "WH",
+  "source_url": "https://yandex.ru/maps/org/wh/33357510992/reviews/",
+  "headless": false,
+  "timeout_ms": 60000,
+  "output_directory": "output"
+}

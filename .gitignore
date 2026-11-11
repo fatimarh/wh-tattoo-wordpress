@@ -22,6 +22,20 @@ plugins/*
 !plugins/wh-tattoo-tools/
 !plugins/wh-tattoo-tools/**
 
+# Собственный плагин отзывов
+!plugins/wh-reviews/
+!plugins/wh-reviews/**
+
+# Локальный экспортёр отзывов, без результатов и окружения
+!tools/
+!tools/yandex-reviews-exporter/
+!tools/yandex-reviews-exporter/export_reviews.py
+!tools/yandex-reviews-exporter/requirements.txt
+!tools/yandex-reviews-exporter/config.example.json
+!tools/yandex-reviews-exporter/README.md
+!tools/yandex-reviews-exporter/output/
+!tools/yandex-reviews-exporter/output/.gitkeep
+
 # Временные файлы
 *.log
 *.tmp
