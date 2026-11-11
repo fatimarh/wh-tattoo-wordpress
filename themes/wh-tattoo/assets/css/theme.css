@@ -2075,3 +2075,124 @@ h3 {
 		padding-left: 0 !important;
 	}
 }
+
+/* =========================================================
+   GLOBAL HEADER AND FOOTER ALIGNMENT
+   Общая направляющая с основными секциями
+   ========================================================= */
+
+.site-header,
+.site-footer {
+	padding-right: var(--wh-content-padding);
+	padding-left: var(--wh-content-padding);
+}
+
+.site-header__inner,
+.site-footer__inner {
+	width: min(100%, var(--wh-container)) !important;
+	max-width: var(--wh-container) !important;
+
+	margin-right: auto !important;
+	margin-left: auto !important;
+
+	padding-right: 0 !important;
+	padding-left: 0 !important;
+}
+
+@media (max-width: 900px) {
+	.site-header,
+	.site-footer {
+		padding-right: 20px;
+		padding-left: 20px;
+	}
+
+	.site-header__inner,
+	.site-footer__inner {
+		width: 100% !important;
+
+		padding-right: 0 !important;
+		padding-left: 0 !important;
+	}
+}
+
+.site-logo {
+	display: flex;
+	align-items: center;
+	flex: 0 0 auto;
+	margin: 0;
+	text-decoration: none;
+}
+
+.site-logo img {
+	display: block;
+	width: 140px;
+	height: auto;
+	max-height: 38px;
+}
+
+@media (max-width: 599px) {
+	.site-logo img {
+		width: 108px;
+		max-height: 32px;
+	}
+}
+
+/* =========================================================
+   SITE LOGO
+   ========================================================= */
+
+.site-logo {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
+	max-width: 100%;
+	margin: 0;
+	text-decoration: none;
+}
+
+.site-logo img {
+	display: block;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+
+/* Белая шапка */
+
+.site-logo--header img {
+	width: 154px;
+	max-width: 154px;
+	height: auto;
+	max-height: 32px;
+}
+
+/* Тёмный подвал */
+
+.site-logo--footer img {
+	width: 180px;
+	max-width: 180px;
+	height: auto;
+	max-height: 38px;
+}
+
+@media (max-width: 900px) {
+	.site-logo--header img {
+		width: 124px;
+		max-width: 124px;
+		max-height: 28px;
+	}
+
+	.site-logo--footer img {
+		width: 160px;
+		max-width: 160px;
+		max-height: 34px;
+	}
+}
+
+@media (max-width: 360px) {
+	.site-logo--header img {
+		width: 108px;
+		max-width: 108px;
+		max-height: 25px;
+	}
+}

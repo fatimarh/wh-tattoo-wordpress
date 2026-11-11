@@ -1,0 +1,75 @@
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	width="700"
+	height="120"
+	viewBox="0 0 700 120"
+	role="img"
+	aria-labelledby="wh-dark-title wh-dark-description"
+>
+	<title id="wh-dark-title">WH Tattoo</title>
+	<desc id="wh-dark-description">
+		Логотип тату-студии WH Tattoo
+	</desc>
+
+	<!-- Геометрический знак WH -->
+	<g fill="#0B0B0B">
+		<path
+			d="
+				M18 18
+				H45
+				L62 92
+				L83 18
+				H106
+				L127 92
+				L144 18
+				H171
+				L141 106
+				H115
+				L95 47
+				L75 106
+				H49
+				Z
+			"
+		/>
+
+		<path
+			d="
+				M188 18
+				H214
+				V51
+				H257
+				V18
+				H283
+				V106
+				H257
+				V73
+				H214
+				V106
+				H188
+				Z
+			"
+		/>
+	</g>
+
+	<!-- Оранжевый разделитель -->
+	<rect
+		x="310"
+		y="18"
+		width="9"
+		height="88"
+		fill="#FF5722"
+	/>
+
+	<!-- Название -->
+	<text
+		x="347"
+		y="87"
+		fill="#0B0B0B"
+		font-family="Arial, Helvetica, sans-serif"
+		font-size="66"
+		font-weight="800"
+		letter-spacing="2"
+	>
+		TATTOO
+	</text>
+</svg>
