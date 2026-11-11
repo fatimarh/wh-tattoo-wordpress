@@ -2042,3 +2042,36 @@ h3 {
 		text-align: center;
 	}
 }
+
+/* =========================================================
+   HERO CONTAINER ALIGNMENT
+   Первый экран по одной линии с остальными секциями
+   ========================================================= */
+
+.hero {
+	padding-right: var(--wh-content-padding);
+	padding-left: var(--wh-content-padding);
+}
+
+.hero__inner {
+	width: min(100%, var(--wh-container)) !important;
+	max-width: var(--wh-container) !important;
+
+	margin-right: auto !important;
+	margin-left: auto !important;
+
+	padding-right: 0 !important;
+	padding-left: 0 !important;
+}
+
+@media (max-width: 900px) {
+	.hero {
+		padding-right: 20px;
+		padding-left: 20px;
+	}
+
+	.hero__inner {
+		padding-right: 0 !important;
+		padding-left: 0 !important;
+	}
+}
