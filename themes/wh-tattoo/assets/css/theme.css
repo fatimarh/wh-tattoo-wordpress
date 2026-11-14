@@ -1032,11 +1032,6 @@ h3 {
 		padding-bottom: 112px;
 	}
 
-	.hero h1 {
-		max-width: 900px !important;
-		font-size: clamp(2.75rem, 4.6vw, 3.5rem);
-	}
-
 	.hero__text {
 		max-width: 700px !important;
 		font-size: clamp(1.25rem, 2.5vw, 1.65rem);
@@ -1044,10 +1039,6 @@ h3 {
 }
 
 @media (min-width: 1200px) {
-	.hero h1 {
-		max-width: 1080px !important;
-	}
-
 	.hero__text {
 		max-width: 760px !important;
 	}
@@ -3244,5 +3235,41 @@ button,
 		padding-right: 9px;
 		padding-left: 9px;
 		font-size: 0.6875rem;
+	}
+}
+
+/* =========================================================
+   HERO TITLE — CONTINUOUS SCALE
+   Плавная шкала от планшета до широкого десктопа
+   ========================================================= */
+
+@media screen and (min-width: 600px) {
+	.hero .wp-block-heading {
+		width: 100% !important;
+
+		max-width: min(
+			1120px,
+			90vw
+		) !important;
+
+		margin-bottom: clamp(
+			32px,
+			3vw,
+			42px
+		) !important;
+
+		font-size: clamp(
+			2rem,
+			5.333vw,
+			4.75rem
+		) !important;
+
+		font-weight: 800 !important;
+		line-height: 1.02 !important;
+		letter-spacing: -0.027em !important;
+
+		white-space: normal !important;
+		overflow: visible !important;
+		text-wrap: balance;
 	}
 }
