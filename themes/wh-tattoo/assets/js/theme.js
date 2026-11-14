@@ -16,6 +16,95 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	const contactMaps = document.querySelectorAll(
+		"[data-contacts-map]"
+	);
+
+	contactMaps.forEach((map) => {
+		const preview = map.querySelector(
+			"[data-map-wake]"
+		);
+
+		if (!preview) {
+			return;
+		}
+
+		const wakeMap = () => {
+			map.classList.add("is-awake");
+
+			preview.setAttribute(
+				"aria-pressed",
+				"true"
+			);
+		};
+
+		const sleepMap = () => {
+			map.classList.remove("is-awake");
+
+			preview.setAttribute(
+				"aria-pressed",
+				"false"
+			);
+		};
+
+		preview.addEventListener(
+			"click",
+			wakeMap
+		);
+
+		map.addEventListener(
+			"mouseleave",
+			() => {
+				if (
+					window.matchMedia(
+						"(pointer: fine)"
+					).matches
+				) {
+					sleepMap();
+				}
+			}
+		);
+
+		document.addEventListener(
+			"keydown",
+			(event) => {
+				if (
+					event.key === "Escape" &&
+					map.classList.contains("is-awake")
+				) {
+					sleepMap();
+					preview.focus();
+				}
+			}
+		);
+
+		if ("IntersectionObserver" in window) {
+			const observer =
+				new IntersectionObserver(
+					(entries) => {
+						const entry = entries[0];
+
+						if (
+							entry.isIntersecting &&
+							entry.intersectionRatio >= 0.2
+						) {
+							return;
+						}
+
+						sleepMap();
+					},
+					{
+						threshold: [
+							0,
+							0.2
+						]
+					}
+				);
+
+			observer.observe(map);
+		}
+	});
+
 	const carousels = document.querySelectorAll("[data-portfolio-carousel]");
 
 	carousels.forEach((carousel) => {
