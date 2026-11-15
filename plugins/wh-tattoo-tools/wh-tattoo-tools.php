@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WH Tattoo Tools
  * Description: Работы и направления портфолио сайта WH Tattoo.
- * Version: 0.5.0
+ * Version: 0.6.0
  * Author: WH Tattoo
  * Requires PHP: 8.1
  * Text Domain: wh-tattoo-tools
@@ -406,6 +406,267 @@ add_action(
 );
 
 /**
+ * Добавляет настройки показа работы на главной странице.
+ */
+function wh_tattoo_add_portfolio_featured_meta_box(): void {
+	add_meta_box(
+		'wh-tattoo-portfolio-featured',
+		'Витрина главной страницы',
+		'wh_tattoo_render_portfolio_featured_meta_box',
+		'portfolio',
+		'side',
+		'high'
+	);
+}
+
+add_action(
+	'add_meta_boxes',
+	'wh_tattoo_add_portfolio_featured_meta_box'
+);
+
+/**
+ * Выводит настройки витрины.
+ *
+ * @param WP_Post $post Текущая работа.
+ */
+function wh_tattoo_render_portfolio_featured_meta_box(
+	WP_Post $post
+): void {
+	$is_featured = get_post_meta(
+		$post->ID,
+		'_wh_tattoo_featured',
+		true
+	);
+
+	$featured_order = absint(
+		get_post_meta(
+			$post->ID,
+			'_wh_tattoo_featured_order',
+			true
+		)
+	);
+
+	wp_nonce_field(
+		'wh_tattoo_save_portfolio_featured',
+		'wh_tattoo_portfolio_featured_nonce'
+	);
+	?>
+	<p>
+		<label>
+			<input
+				type="checkbox"
+				name="wh_tattoo_featured"
+				value="1"
+				<?php checked( $is_featured, '1' ); ?>
+			>
+			Показывать работу на главной
+		</label>
+	</p>
+
+	<p>
+		<label for="wh-tattoo-featured-order">
+			<strong>Порядок показа</strong>
+		</label>
+	</p>
+
+	<p>
+		<input
+			type="number"
+			id="wh-tattoo-featured-order"
+			name="wh_tattoo_featured_order"
+			value="<?php echo esc_attr(
+				(string) $featured_order
+			); ?>"
+			min="0"
+			max="999"
+			step="1"
+			class="small-text"
+		>
+	</p>
+
+	<p class="description">
+		Меньшее число показывается раньше.
+		Для 12 работ используйте:
+		10, 20, 30 … 120.
+	</p>
+
+	<p class="description">
+		Новые работы не попадут на главную,
+		пока этот флажок не будет включён.
+	</p>
+	<?php
+}
+
+/**
+ * Сохраняет настройки витрины.
+ *
+ * @param int $post_id ID работы.
+ */
+function wh_tattoo_save_portfolio_featured_meta(
+	int $post_id
+): void {
+	if (
+		! isset(
+			$_POST['wh_tattoo_portfolio_featured_nonce']
+		)
+	) {
+		return;
+	}
+
+	$nonce = sanitize_text_field(
+		wp_unslash(
+			$_POST['wh_tattoo_portfolio_featured_nonce']
+		)
+	);
+
+	if (
+		! wp_verify_nonce(
+			$nonce,
+			'wh_tattoo_save_portfolio_featured'
+		)
+	) {
+		return;
+	}
+
+	if (
+		defined( 'DOING_AUTOSAVE' )
+		&& DOING_AUTOSAVE
+	) {
+		return;
+	}
+
+	if ( wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+
+	if (
+		'portfolio' !== get_post_type( $post_id )
+		|| ! current_user_can(
+			'edit_post',
+			$post_id
+		)
+	) {
+		return;
+	}
+
+	update_post_meta(
+		$post_id,
+		'_wh_tattoo_featured',
+		isset( $_POST['wh_tattoo_featured'] )
+			? '1'
+			: '0'
+	);
+
+	$featured_order = isset(
+		$_POST['wh_tattoo_featured_order']
+	)
+		? absint(
+			$_POST['wh_tattoo_featured_order']
+		)
+		: 0;
+
+	update_post_meta(
+		$post_id,
+		'_wh_tattoo_featured_order',
+		min( $featured_order, 999 )
+	);
+}
+
+add_action(
+	'save_post_portfolio',
+	'wh_tattoo_save_portfolio_featured_meta'
+);
+
+/**
+ * Добавляет информацию о витрине в список работ.
+ *
+ * @param array<string, string> $columns Колонки списка.
+ *
+ * @return array<string, string>
+ */
+function wh_tattoo_add_portfolio_admin_columns(
+	array $columns
+): array {
+	$updated_columns = array();
+
+	foreach ( $columns as $key => $label ) {
+		$updated_columns[ $key ] = $label;
+
+		if ( 'title' === $key ) {
+			$updated_columns['wh_tattoo_featured']
+				= 'Главная';
+
+			$updated_columns['wh_tattoo_featured_order']
+				= 'Порядок';
+		}
+	}
+
+	return $updated_columns;
+}
+
+add_filter(
+	'manage_portfolio_posts_columns',
+	'wh_tattoo_add_portfolio_admin_columns'
+);
+
+/**
+ * Выводит значения колонок витрины.
+ *
+ * @param string $column  Название колонки.
+ * @param int    $post_id ID работы.
+ */
+function wh_tattoo_render_portfolio_admin_column(
+	string $column,
+	int $post_id
+): void {
+	if ( 'wh_tattoo_featured' === $column ) {
+		$is_featured = get_post_meta(
+			$post_id,
+			'_wh_tattoo_featured',
+			true
+		);
+
+		if ( '1' === $is_featured ) {
+			echo '<strong style="color:#008a20;">Да</strong>';
+		} else {
+			echo '<span style="color:#777;">Нет</span>';
+		}
+
+		return;
+	}
+
+	if ( 'wh_tattoo_featured_order' === $column ) {
+		$is_featured = get_post_meta(
+			$post_id,
+			'_wh_tattoo_featured',
+			true
+		);
+
+		if ( '1' !== $is_featured ) {
+			echo '—';
+			return;
+		}
+
+		echo esc_html(
+			(string) absint(
+				get_post_meta(
+					$post_id,
+					'_wh_tattoo_featured_order',
+					true
+				)
+			)
+		);
+	}
+}
+
+add_action(
+	'manage_portfolio_posts_custom_column',
+	'wh_tattoo_render_portfolio_admin_column',
+	10,
+	2
+);
+
+/**
  * Регистрирует размеры изображений портфолио.
  */
 function wh_tattoo_register_image_sizes(): void {
@@ -491,10 +752,23 @@ function wh_tattoo_portfolio_grid_shortcode(
 			'post_type'           => 'portfolio',
 			'post_status'         => 'publish',
 			'posts_per_page'      => $limit,
-			'orderby'             => 'date',
-			'order'               => 'DESC',
 			'ignore_sticky_posts' => true,
 			'no_found_rows'       => true,
+
+			'meta_key'            => '_wh_tattoo_featured_order',
+
+			'orderby'             => array(
+				'meta_value_num' => 'ASC',
+				'date'           => 'DESC',
+			),
+
+			'meta_query'          => array(
+				array(
+					'key'     => '_wh_tattoo_featured',
+					'value'   => '1',
+					'compare' => '=',
+				),
+			),
 		)
 	);
 

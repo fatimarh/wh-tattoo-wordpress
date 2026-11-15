@@ -1175,6 +1175,21 @@ h3 {
 	scroll-snap-stop: always;
 }
 
+/*
+ * Распределяем только элементы article,
+ * не учитывая возможные служебные <p> от WordPress.
+ */
+
+@media (min-width: 600px) {
+	.portfolio-slide:nth-of-type(odd) {
+		grid-row: 1;
+	}
+
+	.portfolio-slide:nth-of-type(even) {
+		grid-row: 2;
+	}
+}
+
 .portfolio-slide__media {
 	position: relative;
 	width: 100%;
