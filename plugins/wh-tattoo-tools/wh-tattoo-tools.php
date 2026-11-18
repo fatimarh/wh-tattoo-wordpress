@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WH Tattoo Tools
  * Description: Работы и направления портфолио сайта WH Tattoo.
- * Version: 0.6.0
+ * Version: 0.8.1
  * Author: WH Tattoo
  * Requires PHP: 8.1
  * Text Domain: wh-tattoo-tools
@@ -152,12 +152,116 @@ function wh_tattoo_before_image_admin_assets( string $hook_suffix ): void {
 	wp_register_script(
 		'wh-tattoo-before-image-admin',
 		'',
-		array( 'jquery' ),
-		'0.1.0',
+		array(
+			'jquery',
+			'jquery-ui-sortable',
+		),
+		'0.2.0',
 		true
 	);
 
 	wp_enqueue_script( 'wh-tattoo-before-image-admin' );
+
+	wp_register_style(
+		'wh-tattoo-portfolio-admin',
+		false,
+		array(),
+		'0.2.0'
+	);
+
+	wp_enqueue_style(
+		'wh-tattoo-portfolio-admin'
+	);
+
+	wp_add_inline_style(
+		'wh-tattoo-portfolio-admin',
+		'
+		.wh-tattoo-gallery-list {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			gap: 12px;
+			margin: 16px 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		.wh-tattoo-gallery-item {
+			flex: 0 0 138px;
+			width: 138px;
+			box-sizing: border-box;
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			min-width: 0;
+			margin: 0;
+			padding: 8px;
+			background: #fff;
+			border: 1px solid #c3c4c7;
+		}
+
+		.wh-tattoo-gallery-item img {
+			display: block;
+			width: 100%;
+			aspect-ratio: 4 / 5;
+			margin: 0 0 8px;
+			object-fit: cover;
+			background: #f0f0f1;
+		}
+
+		.wh-tattoo-gallery-item__handle {
+			position: absolute;
+			z-index: 2;
+			top: 8px;
+			left: 8px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 36px;
+			height: 36px;
+			margin: 0;
+			padding: 0;
+			cursor: grab;
+			touch-action: none;
+			color: #fff;
+			font-size: 18px;
+			line-height: 1;
+			background: rgba(0, 0, 0, 0.78);
+			border: 0;
+			border-radius: 0;
+		}
+
+		.wh-tattoo-gallery-item__handle:active {
+			cursor: grabbing;
+		}
+
+		.wh-tattoo-gallery-item__remove {
+			align-self: flex-start;
+		}
+
+		.wh-tattoo-gallery-item--placeholder {
+			flex: 0 0 138px;
+			width: 138px;
+			min-height: 210px;
+			box-sizing: border-box;
+			background: #f0f6fc;
+			border: 2px dashed #2271b1;
+		}
+
+		.wh-tattoo-gallery-info {
+			padding: 12px 14px;
+			background: #f6f7f7;
+			border-left: 4px solid #2271b1;
+		}
+
+		.wh-tattoo-gallery-warning {
+			padding: 10px 12px;
+			color: #8a2424;
+			background: #fcf0f1;
+			border-left: 4px solid #d63638;
+		}
+		'
+	);
 
 	$script = <<<'JS'
 jQuery(function ($) {
@@ -221,6 +325,221 @@ jQuery(function ($) {
 
 		$(this).attr("hidden", true);
 	});
+
+	/*
+	 * Дополнительные ракурсы работы.
+	 */
+
+	let galleryFrame = null;
+
+	const galleryList = $(
+		"#wh-tattoo-gallery-list"
+	);
+
+	const galleryInput = $(
+		"#wh-tattoo-gallery-image-ids"
+	);
+
+	const getGalleryIds = () => {
+		return galleryList
+			.find("[data-gallery-item]")
+			.map(function () {
+				return String(
+					$(this).data("attachment-id")
+				);
+			})
+			.get()
+			.filter(Boolean);
+	};
+
+	const updateGalleryInput = () => {
+		galleryInput.val(
+			getGalleryIds().join(",")
+		);
+
+		const count = getGalleryIds().length;
+
+		$(
+			"#wh-tattoo-gallery-count"
+		).text(
+			count === 0
+				? "Дополнительные ракурсы не выбраны."
+				: `Дополнительных ракурсов: ${count}.`
+		);
+
+		$(
+			"#wh-tattoo-gallery-warning"
+		).prop(
+			"hidden",
+			count <= 8
+		);
+	};
+
+	const createGalleryItem = (
+		attachment
+	) => {
+		const previewUrl =
+			attachment.sizes &&
+			attachment.sizes.medium
+				? attachment.sizes.medium.url
+				: attachment.url;
+
+		const item = $("<li>", {
+			class: "wh-tattoo-gallery-item",
+			"data-gallery-item": "",
+			"data-attachment-id": attachment.id
+		});
+
+		const handle = $("<button>", {
+			type: "button",
+			class:
+				"wh-tattoo-gallery-item__handle",
+			"aria-label":
+				"Изменить порядок изображения",
+			title:
+				"Перетащите для изменения порядка"
+		}).text("⋮⋮");
+
+		const image = $("<img>", {
+			src: previewUrl,
+			alt:
+				attachment.alt ||
+				"Дополнительный ракурс"
+		});
+
+		const removeButton = $("<button>", {
+			type: "button",
+			class:
+				"button-link-delete wh-tattoo-gallery-item__remove",
+			"data-remove-gallery-item": ""
+		}).text("Удалить");
+
+		item.append(
+			handle,
+			image,
+			removeButton
+		);
+
+		return item;
+	};
+
+	$(
+		"#wh-tattoo-add-gallery-images"
+	).on("click", function (event) {
+		event.preventDefault();
+
+		if (!galleryFrame) {
+			galleryFrame = wp.media({
+				title:
+					"Выберите дополнительные ракурсы",
+				button: {
+					text:
+						"Добавить в галерею"
+				},
+				library: {
+					type: "image"
+				},
+				multiple: true
+			});
+
+			galleryFrame.on(
+				"select",
+				function () {
+					const existingIds =
+						new Set(
+							getGalleryIds()
+						);
+
+					galleryFrame
+						.state()
+						.get("selection")
+						.toJSON()
+						.forEach(
+							(attachment) => {
+								const id =
+									String(
+										attachment.id
+									);
+
+								if (
+									existingIds.has(
+										id
+									)
+								) {
+									return;
+								}
+
+								existingIds.add(id);
+
+								galleryList.append(
+									createGalleryItem(
+										attachment
+									)
+								);
+							}
+						);
+
+					updateGalleryInput();
+				}
+			);
+		}
+
+		galleryFrame.open();
+	});
+
+	galleryList.on(
+		"click",
+		"[data-remove-gallery-item]",
+		function (event) {
+			event.preventDefault();
+
+			$(this)
+				.closest("[data-gallery-item]")
+				.remove();
+
+			updateGalleryInput();
+		}
+	);
+
+	if (
+		galleryList.length &&
+		typeof galleryList.sortable === "function"
+	) {
+		galleryList.sortable({
+			items: "> [data-gallery-item]",
+			handle:
+				".wh-tattoo-gallery-item__handle",
+			/*
+			 * По умолчанию jQuery UI запрещает начало
+			 * сортировки с элементов button.
+			 * Разрешаем кнопку-ручку и исключаем только удаление.
+			 */
+			cancel:
+				"[data-remove-gallery-item]",
+			axis: false,
+			tolerance: "pointer",
+			distance: 3,
+			placeholder:
+				"wh-tattoo-gallery-item wh-tattoo-gallery-item--placeholder",
+			forcePlaceholderSize: true,
+			forceHelperSize: true,
+			start: function (
+				event,
+				ui
+			) {
+				ui.placeholder
+					.width(ui.item.outerWidth())
+					.height(ui.item.outerHeight());
+			},
+			update: function () {
+				updateGalleryInput();
+			}
+		});
+
+		galleryList.disableSelection();
+	}
+
+	updateGalleryInput();
 });
 JS;
 
@@ -403,6 +722,318 @@ function wh_tattoo_save_before_image_meta( int $post_id ): void {
 add_action(
 	'save_post_portfolio',
 	'wh_tattoo_save_before_image_meta'
+);
+
+/**
+ * Добавляет галерею дополнительных ракурсов.
+ */
+function wh_tattoo_add_portfolio_gallery_meta_box(): void {
+	add_meta_box(
+		'wh-tattoo-portfolio-gallery',
+		'Дополнительные ракурсы',
+		'wh_tattoo_render_portfolio_gallery_meta_box',
+		'portfolio',
+		'normal',
+		'high'
+	);
+}
+
+add_action(
+	'add_meta_boxes',
+	'wh_tattoo_add_portfolio_gallery_meta_box'
+);
+
+/**
+ * Возвращает сохранённые ID дополнительных ракурсов.
+ *
+ * @param int $post_id ID работы.
+ *
+ * @return array<int, int>
+ */
+function wh_tattoo_get_portfolio_gallery_ids(
+	int $post_id
+): array {
+	$stored_ids = get_post_meta(
+		$post_id,
+		'_wh_tattoo_gallery_image_ids',
+		true
+	);
+
+	if ( ! is_array( $stored_ids ) ) {
+		return array();
+	}
+
+	$image_ids = array();
+
+	foreach ( $stored_ids as $image_id ) {
+		$image_id = absint( $image_id );
+
+		if (
+			$image_id
+			&& wp_attachment_is_image( $image_id )
+		) {
+			$image_ids[] = $image_id;
+		}
+	}
+
+	return array_values(
+		array_unique( $image_ids )
+	);
+}
+
+/**
+ * Выводит поле дополнительных ракурсов.
+ *
+ * @param WP_Post $post Текущая работа.
+ */
+function wh_tattoo_render_portfolio_gallery_meta_box(
+	WP_Post $post
+): void {
+	$image_ids = wh_tattoo_get_portfolio_gallery_ids(
+		$post->ID
+	);
+
+	wp_nonce_field(
+		'wh_tattoo_save_portfolio_gallery',
+		'wh_tattoo_portfolio_gallery_nonce'
+	);
+	?>
+	<div class="wh-tattoo-gallery-field">
+		<p class="wh-tattoo-gallery-info">
+			<strong>Основное изображение записи</strong>
+			всегда показывается первым.
+			Здесь добавляются только дополнительные
+			ракурсы той же работы.
+		</p>
+
+		<input
+			type="hidden"
+			id="wh-tattoo-gallery-image-ids"
+			name="wh_tattoo_gallery_image_ids"
+			value="<?php echo esc_attr(
+				implode( ',', $image_ids )
+			); ?>"
+		>
+
+		<ul
+			class="wh-tattoo-gallery-list"
+			id="wh-tattoo-gallery-list"
+		>
+			<?php foreach ( $image_ids as $image_id ) : ?>
+				<?php
+				$image_url =
+					wp_get_attachment_image_url(
+						$image_id,
+						'medium'
+					);
+
+				$image_alt = get_post_meta(
+					$image_id,
+					'_wp_attachment_image_alt',
+					true
+				);
+				?>
+
+				<?php if ( $image_url ) : ?>
+					<li
+						class="wh-tattoo-gallery-item"
+						data-gallery-item
+						data-attachment-id="<?php echo esc_attr(
+							(string) $image_id
+						); ?>"
+					>
+						<button
+							type="button"
+							class="wh-tattoo-gallery-item__handle"
+							aria-label="Изменить порядок изображения"
+							title="Перетащите для изменения порядка"
+						>
+							⋮⋮
+						</button>
+
+						<img
+							src="<?php echo esc_url(
+								$image_url
+							); ?>"
+							alt="<?php echo esc_attr(
+								$image_alt
+									?: 'Дополнительный ракурс'
+							); ?>"
+						>
+
+						<button
+							type="button"
+							class="button-link-delete wh-tattoo-gallery-item__remove"
+							data-remove-gallery-item
+						>
+							Удалить
+						</button>
+					</li>
+				<?php endif; ?>
+			<?php endforeach; ?>
+		</ul>
+
+		<p>
+			<button
+				type="button"
+				class="button button-secondary"
+				id="wh-tattoo-add-gallery-images"
+			>
+				Добавить фотографии
+			</button>
+		</p>
+
+		<p
+			class="description"
+			id="wh-tattoo-gallery-count"
+		>
+			<?php
+			echo $image_ids
+				? esc_html(
+					sprintf(
+						'Дополнительных ракурсов: %d.',
+						count( $image_ids )
+					)
+				)
+				: 'Дополнительные ракурсы не выбраны.';
+			?>
+		</p>
+
+		<p
+			class="wh-tattoo-gallery-warning"
+			id="wh-tattoo-gallery-warning"
+			<?php echo count( $image_ids ) > 8
+				? ''
+				: 'hidden'; ?>
+		>
+			Для главной обычно достаточно 2–8 материалов.
+			Большое количество не запрещено, но потребует
+			больше трафика при активном просмотре.
+		</p>
+
+		<details>
+			<summary>
+				Требования к материалам
+			</summary>
+
+			<p class="description">
+				Фото: JPG или WebP, желательно вертикальные
+				4:5, от 800 × 1000 px. Основная фотография
+				задаётся через «Изображение записи».
+			</p>
+		</details>
+	</div>
+	<?php
+}
+
+/**
+ * Сохраняет дополнительные ракурсы работы.
+ *
+ * @param int $post_id ID работы.
+ */
+function wh_tattoo_save_portfolio_gallery_meta(
+	int $post_id
+): void {
+	if (
+		! isset(
+			$_POST['wh_tattoo_portfolio_gallery_nonce']
+		)
+	) {
+		return;
+	}
+
+	$nonce = sanitize_text_field(
+		wp_unslash(
+			$_POST[
+				'wh_tattoo_portfolio_gallery_nonce'
+			]
+		)
+	);
+
+	if (
+		! wp_verify_nonce(
+			$nonce,
+			'wh_tattoo_save_portfolio_gallery'
+		)
+	) {
+		return;
+	}
+
+	if (
+		defined( 'DOING_AUTOSAVE' )
+		&& DOING_AUTOSAVE
+	) {
+		return;
+	}
+
+	if ( wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+
+	if (
+		'portfolio' !== get_post_type( $post_id )
+		|| ! current_user_can(
+			'edit_post',
+			$post_id
+		)
+	) {
+		return;
+	}
+
+	$raw_ids = isset(
+		$_POST['wh_tattoo_gallery_image_ids']
+	)
+		? sanitize_text_field(
+			wp_unslash(
+				$_POST[
+					'wh_tattoo_gallery_image_ids'
+				]
+			)
+		)
+		: '';
+
+	$image_ids = array();
+
+	if ( '' !== $raw_ids ) {
+		foreach (
+			explode( ',', $raw_ids ) as $raw_id
+		) {
+			$image_id = absint( $raw_id );
+
+			if (
+				$image_id
+				&& wp_attachment_is_image(
+					$image_id
+				)
+			) {
+				$image_ids[] = $image_id;
+			}
+		}
+	}
+
+	$image_ids = array_values(
+		array_unique( $image_ids )
+	);
+
+	if ( $image_ids ) {
+		update_post_meta(
+			$post_id,
+			'_wh_tattoo_gallery_image_ids',
+			$image_ids
+		);
+
+		return;
+	}
+
+	delete_post_meta(
+		$post_id,
+		'_wh_tattoo_gallery_image_ids'
+	);
+}
+
+add_action(
+	'save_post_portfolio',
+	'wh_tattoo_save_portfolio_gallery_meta'
 );
 
 /**
@@ -849,6 +1480,71 @@ function wh_tattoo_portfolio_grid_shortcode(
 						true
 					)
 					: '';
+
+				$gallery_image_ids =
+					wh_tattoo_get_portfolio_gallery_ids(
+						$post_id
+					);
+
+				$after_items = array();
+
+				/*
+				 * Основное изображение записи всегда первое.
+				 */
+				$after_items[] = array(
+					'id'  => $after_image_id,
+					'url' => $after_image_url ?: '',
+					'alt' => $after_alt ?: get_the_title(),
+				);
+
+				foreach (
+					$gallery_image_ids as $gallery_image_id
+				) {
+					/*
+					 * Не допускаем повтор основного изображения.
+					 */
+					if (
+						$gallery_image_id
+						=== $after_image_id
+					) {
+						continue;
+					}
+
+					$gallery_image_url =
+						wp_get_attachment_image_url(
+							$gallery_image_id,
+							'wh-tattoo-portfolio-card'
+						);
+
+					if ( ! $gallery_image_url ) {
+						continue;
+					}
+
+					$gallery_image_alt = get_post_meta(
+						$gallery_image_id,
+						'_wp_attachment_image_alt',
+						true
+					);
+
+					$after_items[] = array(
+						'id'  => $gallery_image_id,
+						'url' => $gallery_image_url,
+						'alt' => $gallery_image_alt
+							?: get_the_title(),
+					);
+				}
+
+				$gallery_json = wp_json_encode(
+					$after_items,
+					JSON_UNESCAPED_UNICODE
+					| JSON_UNESCAPED_SLASHES
+					| JSON_HEX_TAG
+					| JSON_HEX_AMP
+				);
+
+				$gallery_data = $gallery_json
+					? base64_encode( $gallery_json )
+					: '';
 				?>
 				<article
 					class="portfolio-slide"
@@ -858,20 +1554,20 @@ function wh_tattoo_portfolio_grid_shortcode(
 						<img
 							class="portfolio-slide__image"
 							src="<?php echo esc_url(
-								$after_image_url ?: ''
+								$after_items[0]['url']
 							); ?>"
 							alt="<?php echo esc_attr(
-								$after_alt ?: get_the_title()
+								$after_items[0]['alt']
 							); ?>"
 							loading="lazy"
 							decoding="async"
 							draggable="false"
 							data-portfolio-image
 							data-after-src="<?php echo esc_url(
-								$after_image_url ?: ''
+								$after_items[0]['url']
 							); ?>"
 							data-after-alt="<?php echo esc_attr(
-								$after_alt ?: get_the_title()
+								$after_items[0]['alt']
 							); ?>"
 							data-before-src="<?php echo esc_url(
 								$before_image_url ?: ''
@@ -881,6 +1577,22 @@ function wh_tattoo_portfolio_grid_shortcode(
 									?: 'Фотография до перекрытия'
 							); ?>"
 						>
+
+						<?php if ( count( $after_items ) > 1 ) : ?>
+							<div
+								class="portfolio-slide__gallery-data"
+								data-portfolio-gallery-data="<?php echo esc_attr(
+									$gallery_data
+								); ?>"
+								hidden
+							></div>
+
+							<div
+								class="portfolio-slide__dots"
+								data-portfolio-dots
+								aria-label="Дополнительные ракурсы работы"
+							></div>
+						<?php endif; ?>
 
 						<?php if ( $before_image_url ) : ?>
 							<div
